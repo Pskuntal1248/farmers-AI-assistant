@@ -1,11 +1,14 @@
 package kishanMitra.demo.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import kishanMitra.demo.dto.SoilData;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
+import kishanMitra.demo.dto.SoilData;
 
 @Service
 public class SoilDataService {
@@ -17,11 +20,6 @@ public class SoilDataService {
         this.restTemplate = restTemplate;
         this.aiService = aiService;
     }
-
-    /**
-     * The main method to get soil data. It now uses the AI Simulator as its primary source.
-     * If the AI fails, it throws an exception to trigger the hardcoded mock fallback.
-     */
     public SoilData getSoilData(double lat, double lon) {
         System.out.println("--- Using Gemini AI Soil Simulator as primary data source... ---");
         SoilData aiMockData = aiService.getAiMockSoilData(lat, lon);

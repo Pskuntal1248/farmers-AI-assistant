@@ -1,5 +1,6 @@
 package kishanMitra.demo.dto;
 
+
 import lombok.Data;
 
 @Data
@@ -12,7 +13,7 @@ public class DashboardData {
     private String currentSeason;
     private double groundwaterIndex; // 0-100 scale
 
-    // Real-time Data
+    // Real-time Data yess 
     private SoilData soilData;
     private WeatherData weatherData;
     private ClimateData climateData;
