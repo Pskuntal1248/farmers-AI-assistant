@@ -1,17 +1,19 @@
 package kishanMitra.demo.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import kishanMitra.demo.dto.DashboardData;
-import kishanMitra.demo.dto.SoilData;
-import kishanMitra.demo.dto.gemini.GeminiRequest;
-import kishanMitra.demo.dto.gemini.GeminiResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import kishanMitra.demo.dto.DashboardData;
+import kishanMitra.demo.dto.SoilData;
+import kishanMitra.demo.dto.gemini.GeminiRequest;
+import kishanMitra.demo.dto.gemini.GeminiResponse;
 
 @Service
 public class AIService {
@@ -21,10 +23,20 @@ public class AIService {
     @Value("${gemini.api.key}")
     private String mainApiKey;
 
+    @Value("${gemini.secondary.api.key}")
+    private String secondaryApiKey;
+
+    @Value("${gemini.tertiary.api.key}")
+    private String tertiaryApiKey;
+
+    @Value("${gemini.quaternary.api.key}")
+    private String quaternaryApiKey;
+
     @Value("${gemini.mock.data.api.key}")
     private String mockDataApiKey;
 
-    private final String geminiApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+    @Value("${gemini.api.url}")
+    private String geminiApiUrl;
 
     public AIService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -51,7 +63,7 @@ public class AIService {
                 lat, lon
         );
 
-        String rawResponse = callGeminiApi(prompt, mockDataApiKey);
+        String rawResponse = callGeminiApiWithFallback(prompt);
         SoilData soilData = new SoilData();
 
         // **IMPROVED CHECK**
@@ -134,7 +146,7 @@ public class AIService {
                 data.getClimateData().getAverageTemperature(), data.getClimateData().getAnnualRainfall(),
                 data.getClimateData().getKoppenGeigerClassification()
         );
-        String recommendation = callGeminiApi(prompt, mainApiKey);
+        String recommendation = callGeminiApiWithFallback(prompt);
         if (recommendation == null) {
             return "Could not retrieve a recommendation at this time.";
         }
@@ -169,28 +181,59 @@ public class AIService {
                 data.getClimateData().getKoppenGeigerClassification(),
                 userMessage
         );
-        String response = callGeminiApi(prompt, mainApiKey);
+        String response = callGeminiApiWithFallback(prompt);
         if (response == null) {
             return "I am sorry, I am having trouble connecting right now. Please try again in a moment.";
         }
         return response.replace("```", "").trim();
     }
 
+    /**
+     * Cascading fallback mechanism for API calls
+     * Level 1: Primary Gemini API key
+     * Level 2: Secondary Gemini API key
+     * Level 3: Tertiary fallback key
+     * Level 4: Quaternary fallback key (DeepSeek)
+     * Level 5: Hardcoded mock data
+     */
+    private String callGeminiApiWithFallback(String prompt) {
+        String[] apiKeys = {mainApiKey, secondaryApiKey, tertiaryApiKey, quaternaryApiKey};
+        String[] keyNames = {"Primary", "Secondary", "Tertiary", "Quaternary"};
+        
+        for (int i = 0; i < apiKeys.length; i++) {
+            String result = callGeminiApi(prompt, apiKeys[i]);
+            if (result != null) {
+                if (i > 0) {
+                    System.out.println("INFO: Used " + keyNames[i] + " fallback key successfully");
+                }
+                return result;
+            }
+            System.err.println("WARNING: " + keyNames[i] + " API key failed, trying next fallback...");
+        }
+        
+        System.err.println("ERROR: All API keys failed, returning null for hardcoded fallback");
+        return null;
+    }
+
     private String callGeminiApi(String prompt, String apiKey) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("X-goog-api-key", apiKey);
-        GeminiRequest requestBody = new GeminiRequest(prompt);
-        HttpEntity<GeminiRequest> entity = new HttpEntity<>(requestBody, headers);
         try {
-            GeminiResponse response = restTemplate.postForObject(geminiApiUrl, entity, GeminiResponse.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            // Build URL with API key as query parameter
+            String urlWithKey = geminiApiUrl + "?key=" + apiKey;
+            
+            GeminiRequest requestBody = new GeminiRequest(prompt);
+            HttpEntity<GeminiRequest> entity = new HttpEntity<>(requestBody, headers);
+            
+            GeminiResponse response = restTemplate.postForObject(urlWithKey, entity, GeminiResponse.class);
             if (response == null || response.getFirstCandidateText() == null) {
                 return null;
             }
             return response.getFirstCandidateText();
         } catch (Exception e) {
             System.err.println("Error calling Gemini API: " + e.getMessage());
-            return null; // **CRITICAL CHANGE**: Return null on ANY exception
+            return null;
         }
     }
 
@@ -226,7 +269,7 @@ public class AIService {
                 data.getWeatherData().getSevenDayForecast().stream().mapToDouble(d -> d.getPrecipitationSum()).sum(),
                 data.getClimateData().getAverageTemperature(), data.getClimateData().getAnnualRainfall(), data.getClimateData().getKoppenGeigerClassification()
         );
-        String res = callGeminiApi(prompt, mainApiKey);
+        String res = callGeminiApiWithFallback(prompt);
         return res != null ? res.replace("```", "").trim() : null;
     }
     private String toSingleLine(String text) {

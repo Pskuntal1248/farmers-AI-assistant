@@ -362,7 +362,7 @@ const ChatbotPage = () => {
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: data.reply || data.message || "Sorry, I couldn't process your request.",
+        content: data.response || data.message || "Sorry, I couldn't process your request.",
         role: "assistant",
         timestamp: new Date(),
       };
@@ -376,10 +376,21 @@ const ChatbotPage = () => {
         setApiStatus("offline");
       }
       
-      let errorContent = "Sorry, I'm having trouble connecting to the server. Please try again later.";
+      let errorContent = "I am sorry, I am having trouble connecting right now. Please try again in a moment.";
       
       if (error instanceof ChatbotApiError) {
-        errorContent = error.message;
+        // Check for specific error types
+        if (error.message.includes('quota') || error.message.includes('429')) {
+          errorContent = "I'm currently at my daily limit. Please try again later or contact support for more assistance.";
+        } else if (error.message.includes('timeout')) {
+          errorContent = "The request is taking too long. Please check your connection and try again.";
+        } else if (error.message.includes('Cannot connect')) {
+          errorContent = "Cannot connect to the server. Please make sure you're connected to the internet.";
+        } else if (error.status === 500) {
+          errorContent = "The server encountered an error. Please try again in a moment.";
+        } else {
+          errorContent = error.message;
+        }
       }
       
       const errorMessage: Message = {

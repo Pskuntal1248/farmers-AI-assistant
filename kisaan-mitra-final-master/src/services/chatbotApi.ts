@@ -29,15 +29,23 @@ export const chatbotApi = {
    */
   async sendMessage(request: ChatbotRequest): Promise<ChatbotResponse> {
     const API_BASE_URL = 'http://localhost:8080';
+    const TIMEOUT_MS = 30000; // 30 seconds
     
     try {
+      // Create abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+      
       const response = await fetch(`${API_BASE_URL}/api/chatbot`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(request),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         // Try to get error message from response
@@ -59,10 +67,17 @@ export const chatbotApi = {
         throw error;
       }
 
+      // Handle abort/timeout
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new ChatbotApiError(
+          'Request timeout. The server is taking too long to respond. Please try again.'
+        );
+      }
+
       // Handle network errors, CORS issues, etc.
       if (error instanceof TypeError && error.message.includes('fetch')) {
         throw new ChatbotApiError(
-          'Unable to connect to the API server. Please make sure the server is running on http://localhost:8080'
+          'Cannot connect to backend server. Please ensure the server is running on port 8080.'
         );
       }
 

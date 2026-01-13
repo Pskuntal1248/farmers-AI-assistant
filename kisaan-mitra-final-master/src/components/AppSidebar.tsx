@@ -1,4 +1,4 @@
-import { Home, CloudRain, Layers, Sprout, BarChart3, MessageCircle } from "lucide-react";
+import { Home, CloudRain, Layers, Sprout, BarChart3, MessageCircle, IndianRupee } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 
 import {
@@ -18,6 +18,7 @@ const navigationItems = [
   { title: "Weather", url: "/weather", icon: CloudRain },
   { title: "Soil Analysis", url: "/soil", icon: Layers },
   { title: "Crops", url: "/crops", icon: Sprout },
+  { title: "Market Prices", url: "/market-prices", icon: IndianRupee },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "AI Assistant", url: "/chatbot", icon: MessageCircle },
 ];

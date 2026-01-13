@@ -1,6 +1,39 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
 
+// Configure axios with timeout and retry logic
+const axiosInstance = axios.create({
+  timeout: 30000, // 30 seconds timeout
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add response interceptor for better error handling
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const config = error.config;
+    
+    // Retry logic for network errors
+    if (!config || !config.retry) {
+      config.retry = 0;
+    }
+    
+    if (config.retry < 3 && (!error.response || error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK')) {
+      config.retry += 1;
+      console.log(`Retrying request (attempt ${config.retry}/3)...`);
+      
+      // Wait before retrying (exponential backoff)
+      await new Promise(resolve => setTimeout(resolve, 1000 * config.retry));
+      
+      return axiosInstance(config);
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
 // Types for user preferences
 interface UserPreferences {
   latitude: number | null;
@@ -108,7 +141,7 @@ interface SoilData {
   soilType: string;
   soilTemperature: number;
   
-  // Soil composition and structure
+ 
   soilOrganicCarbon: number;
   cationExchangeCapacity: number;
   bulkDensity: number;
@@ -116,24 +149,24 @@ interface SoilData {
   siltPercent: number;
   clayPercent: number;
   
-  // Nutrient levels (N-P-K)
+  
   nitrogen: number;
   phosphorus: number;
   potassium: number;
   
-  // Soil chemistry
+ 
   electricalConductivity: number;
   salinity: number;
   
-  // Health score (optional, calculated)
+  
   soilHealthScore?: number;
 }
 
 interface CropData {
-  // Direct fields from API
+
   recommendationText?: string;
   currentSeason?: string;
-  season?: string; // Fallback for currentSeason
+  season?: string; 
   cropProfiles?: Array<{
     name: string;
     season: string;
@@ -364,13 +397,26 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         url: apiUrl
       });
       
-      const response = await axios.get(apiUrl);
+      const response = await axiosInstance.get(apiUrl);
       const data = response.data;
       console.log('Fetched API data:', data);
       setApiData(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error fetching data:", err);
-      setError("Failed to load data. Using fallback data.");
+      
+      // More detailed error messages
+      let errorMessage = "Failed to load data. ";
+      if (err.code === 'ECONNABORTED') {
+        errorMessage += "Request timeout. Please check your connection.";
+      } else if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
+        errorMessage += "Cannot connect to backend server. Please ensure the backend is running on port 8080.";
+      } else if (err.response) {
+        errorMessage += `Server error: ${err.response.status}`;
+      } else {
+        errorMessage += err.message || "Unknown error occurred.";
+      }
+      
+      setError(errorMessage);
       // Set minimal fallback data so app doesn't break
       setApiData({});
     } finally {

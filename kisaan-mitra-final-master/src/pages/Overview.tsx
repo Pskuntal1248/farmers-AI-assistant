@@ -7,11 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import { useData } from "@/contexts/DataContext";
 const Overview = () => {
   const { isLoading, error, refetch, getOverviewData } = useData();
-
-  // Get overview-specific data using the new getter
   const overviewData = getOverviewData();
-  
-  // Process data for dashboard display with proper fallbacks
+   
   const dashboardData = {
     district: overviewData?.district ?? "Delhi Region",
     state: overviewData?.state ?? "Delhi",
@@ -24,7 +21,6 @@ const Overview = () => {
       }
     }
   };
-
   if (isLoading) {
     return (
       <div className="space-y-6">
