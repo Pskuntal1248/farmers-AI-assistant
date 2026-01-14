@@ -63,7 +63,7 @@ public class AIService {
                 lat, lon
         );
 
-        String rawResponse = callGeminiApiWithFallback(prompt);
+        String rawResponse = callGeminiApiForData(prompt);
         SoilData soilData = new SoilData();
 
         // **IMPROVED CHECK**
@@ -146,7 +146,7 @@ public class AIService {
                 data.getClimateData().getAverageTemperature(), data.getClimateData().getAnnualRainfall(),
                 data.getClimateData().getKoppenGeigerClassification()
         );
-        String recommendation = callGeminiApiWithFallback(prompt);
+        String recommendation = callGeminiApiForData(prompt);
         if (recommendation == null) {
             return "Could not retrieve a recommendation at this time.";
         }
@@ -181,7 +181,7 @@ public class AIService {
                 data.getClimateData().getKoppenGeigerClassification(),
                 userMessage
         );
-        String response = callGeminiApiWithFallback(prompt);
+        String response = callGeminiApiForChatbot(prompt);
         if (response == null) {
             return "I am sorry, I am having trouble connecting right now. Please try again in a moment.";
         }
@@ -189,16 +189,13 @@ public class AIService {
     }
 
     /**
-     * Cascading fallback mechanism for API calls
-     * Level 1: Primary Gemini API key
-     * Level 2: Secondary Gemini API key
-     * Level 3: Tertiary fallback key
-     * Level 4: Quaternary fallback key (DeepSeek)
-     * Level 5: Hardcoded mock data
+     * Cascading fallback mechanism for chatbot API calls
+     * Level 1: Quaternary key (primary for chatbot)
+     * Level 2: Tertiary key (rollback for chatbot)
      */
-    private String callGeminiApiWithFallback(String prompt) {
-        String[] apiKeys = {mainApiKey, secondaryApiKey, tertiaryApiKey, quaternaryApiKey};
-        String[] keyNames = {"Primary", "Secondary", "Tertiary", "Quaternary"};
+    private String callGeminiApiForChatbot(String prompt) {
+        String[] apiKeys = {quaternaryApiKey, tertiaryApiKey};
+        String[] keyNames = {"Quaternary (Chatbot Primary)", "Tertiary (Chatbot Rollback)"};
         
         for (int i = 0; i < apiKeys.length; i++) {
             String result = callGeminiApi(prompt, apiKeys[i]);
@@ -211,7 +208,31 @@ public class AIService {
             System.err.println("WARNING: " + keyNames[i] + " API key failed, trying next fallback...");
         }
         
-        System.err.println("ERROR: All API keys failed, returning null for hardcoded fallback");
+        System.err.println("ERROR: All chatbot API keys failed, returning null");
+        return null;
+    }
+
+    /**
+     * Cascading fallback mechanism for data API calls
+     * Level 1: Primary key (main for data)
+     * Level 2: Secondary key (rollback for data)
+     */
+    private String callGeminiApiForData(String prompt) {
+        String[] apiKeys = {mainApiKey, secondaryApiKey};
+        String[] keyNames = {"Primary (Data Main)", "Secondary (Data Rollback)"};
+        
+        for (int i = 0; i < apiKeys.length; i++) {
+            String result = callGeminiApi(prompt, apiKeys[i]);
+            if (result != null) {
+                if (i > 0) {
+                    System.out.println("INFO: Used " + keyNames[i] + " fallback key successfully");
+                }
+                return result;
+            }
+            System.err.println("WARNING: " + keyNames[i] + " API key failed, trying next fallback...");
+        }
+        
+        System.err.println("ERROR: All data API keys failed, returning null for hardcoded fallback");
         return null;
     }
 
@@ -269,7 +290,7 @@ public class AIService {
                 data.getWeatherData().getSevenDayForecast().stream().mapToDouble(d -> d.getPrecipitationSum()).sum(),
                 data.getClimateData().getAverageTemperature(), data.getClimateData().getAnnualRainfall(), data.getClimateData().getKoppenGeigerClassification()
         );
-        String res = callGeminiApiWithFallback(prompt);
+        String res = callGeminiApiForData(prompt);
         return res != null ? res.replace("```", "").trim() : null;
     }
     private String toSingleLine(String text) {
