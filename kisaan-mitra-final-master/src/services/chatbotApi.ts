@@ -28,7 +28,7 @@ export const chatbotApi = {
    * Send a message to the chatbot API
    */
   async sendMessage(request: ChatbotRequest): Promise<ChatbotResponse> {
-    const API_BASE_URL = 'http://localhost:8080';
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
     const TIMEOUT_MS = 30000; // 30 seconds
     
     try {

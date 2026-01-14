@@ -388,7 +388,8 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       const userPrefs = getUserPreferences();
       
       // Construct API URL with user preferences
-      const apiUrl = `http://localhost:8080/api/all-data?lat=${userPrefs.latitude}&lon=${userPrefs.longitude}&lang=${userPrefs.language}`;
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+      const apiUrl = `${baseUrl}/api/all-data?lat=${userPrefs.latitude}&lon=${userPrefs.longitude}&lang=${userPrefs.language}`;
       
       console.log('Fetching data with user preferences:', {
         latitude: userPrefs.latitude,
