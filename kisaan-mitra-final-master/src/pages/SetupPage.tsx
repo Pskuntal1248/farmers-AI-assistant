@@ -101,8 +101,8 @@ const SetupPage = () => {
         }}
       />
 
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent via-transparent to-white/80" />
+      {/* Subtle overlay */}
+      <div className="absolute inset-0 z-0 bg-white/80" />
 
       {/* Content */}
       <div className="relative z-10 flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
@@ -110,7 +110,7 @@ const SetupPage = () => {
           {/* Header Section */}
           <div className="text-center space-y-6">
             <div className="flex items-center justify-center gap-3">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/25">
+              <div className="h-14 w-14 rounded-2xl bg-green-600 flex items-center justify-center shadow-lg shadow-green-500/25">
                 <Leaf className="h-7 w-7 text-white" />
               </div>
             </div>
@@ -119,7 +119,7 @@ const SetupPage = () => {
                 Smart Agriculture Platform
               </Badge>
               <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-gray-900">
-                Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500">Kisaan Mitra</span>
+                Welcome to <span className="text-green-600">Kisaan Mitra</span>
               </h1>
               <p className="text-lg text-gray-600 max-w-xl mx-auto">
                 Your intelligent farming companion for weather insights, soil analysis, and crop recommendations
@@ -133,7 +133,7 @@ const SetupPage = () => {
             <Card className="bg-white/80 backdrop-blur-sm border-gray-200/80 shadow-xl shadow-gray-200/50 hover:shadow-2xl transition-all duration-300">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-md shadow-blue-500/25">
+                  <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/25">
                     <MapPin className="h-5 w-5 text-white" />
                   </div>
                   Your Location
@@ -147,7 +147,7 @@ const SetupPage = () => {
                 <Button 
                   onClick={handleGetLocation}
                   disabled={isGettingLocation}
-                  className="w-full h-12 text-base font-medium bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/25 transition-all duration-300"
+                  className="w-full h-12 text-base font-medium bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25 transition-all duration-300"
                   data-testid="button-get-location"
                 >
                   {isGettingLocation ? (
@@ -164,7 +164,7 @@ const SetupPage = () => {
                 </Button>
 
                 {location && (
-                  <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
+                  <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100">
                     <CheckCircle2 className="h-5 w-5 text-blue-600 flex-shrink-0" />
                     <div>
                       <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">Coordinates</p>
@@ -179,7 +179,7 @@ const SetupPage = () => {
             <Card className="bg-white/80 backdrop-blur-sm border-gray-200/80 shadow-xl shadow-gray-200/50 hover:shadow-2xl transition-all duration-300">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-md shadow-purple-500/25">
+                  <div className="h-10 w-10 rounded-xl bg-purple-600 flex items-center justify-center shadow-md shadow-purple-500/25">
                     <Globe className="h-5 w-5 text-white" />
                   </div>
                   Language Preference
@@ -204,7 +204,7 @@ const SetupPage = () => {
                 </Select>
 
                 {language && (
-                  <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100">
+                  <div className="flex items-center gap-3 p-4 bg-purple-50 rounded-xl border border-purple-100">
                     <CheckCircle2 className="h-5 w-5 text-purple-600 flex-shrink-0" />
                     <div>
                       <p className="text-xs text-purple-600 font-medium uppercase tracking-wide">Selected Language</p>
@@ -256,7 +256,7 @@ const SetupPage = () => {
               size="lg"
               className={`h-14 px-10 text-lg font-semibold shadow-xl transition-all duration-300 ${
                 isSetupComplete 
-                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-green-500/30 hover:shadow-green-500/40 hover:scale-[1.02]' 
+                  ? 'bg-green-600 hover:bg-green-700 shadow-green-500/30 hover:shadow-green-500/40 hover:scale-[1.02]' 
                   : 'bg-gray-300 cursor-not-allowed'
               }`}
               data-testid="button-continue-dashboard"
